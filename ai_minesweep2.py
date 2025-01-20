@@ -4,12 +4,7 @@ import torch.nn as nn
 import torch.optim as optim
 
 
-# 8x8x10 = 640
-# conv : 640 -> 512
-# conv : 512 -> 256
-# conv ...
-# fully connected 
-# 6x6 
+
 gamma=0.9
 batch_size = 100
 learning_rate = 0.0001
@@ -23,8 +18,7 @@ epsilon_reduction_factor = 0.01**(1/90000) ## tidligere 60000
 iteration_max=400000
 iteration_period=10000
 steps_per_gradient_update = 10
-max_episode_step = 49
-#start_input = size**2 *10
+max_episode_step = 36  # baseret på størrelse af pladen (dette for en 6X6 plade)
 
 class Network2(nn.Module):
     def __init__(self, size):
@@ -34,7 +28,7 @@ class Network2(nn.Module):
         self.conv3 = nn.Conv2d(16, 64, kernel_size= 3, stride=1, padding = 1) #
         self.conv4 = nn.Conv2d(64, 1, kernel_size= 3, stride=1, padding = 1) #
         self.fc1 = nn.Linear(size**2,32)
-        self.fc2 = nn.Linear(32,size**2)
+        self.fc2 = nn.Linear(32,size**2)  # For at får returneret værdier tilsvarende til boarded 
         self.relu = nn.LeakyReLU()
         self.optimizer = torch.optim.Adam(self.parameters(), lr = learning_rate)
         self.size = size
