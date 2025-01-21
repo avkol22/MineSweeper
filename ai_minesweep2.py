@@ -23,10 +23,10 @@ max_episode_step = 36  # baseret på størrelse af pladen (dette for en 6X6 plad
 class Network2(nn.Module):
     def __init__(self, size):
         super(Network2, self).__init__()
-        self.conv1 = nn.Conv2d(10, 24, kernel_size= 3, stride=1, padding = 1)  # 
-        self.conv2 = nn.Conv2d(24, 16, kernel_size= 3, stride=1, padding = 1) #
-        self.conv3 = nn.Conv2d(16, 64, kernel_size= 3, stride=1, padding = 1) #
-        self.conv4 = nn.Conv2d(64, 1, kernel_size= 3, stride=1, padding = 1) #
+        self.conv1 = nn.Conv2d(10, 24, kernel_size= 3, stride=1, padding = 1)  
+        self.conv2 = nn.Conv2d(24, 16, kernel_size= 3, stride=1, padding = 1) 
+        self.conv3 = nn.Conv2d(16, 64, kernel_size= 3, stride=1, padding = 1) 
+        self.conv4 = nn.Conv2d(64, 1, kernel_size= 3, stride=1, padding = 1) 
         self.fc1 = nn.Linear(size**2,32)
         self.fc2 = nn.Linear(32,size**2)  # For at får returneret værdier tilsvarende til boarded 
         self.relu = nn.LeakyReLU()
