@@ -44,9 +44,7 @@ while not exit_program:
                     state, action, reward, new_state, game_over = env.step(y_pos, x_pos)
     
     if runai:
-        #model.load_state_dict(torch.load('model_50000.pt',weights_only=True))
-        ### Logging
-        print('started')
+        ### Logging data 
         wins = []
         p_vals =[]
         losses = []
@@ -62,32 +60,26 @@ while not exit_program:
             episode_step = 0
             episode_loss = 0
             episode_gradient_step = 0
-            # reduce exploration rate
+            # reduces exploration rate
             epsilon = (epsilon-epsilon_min)*epsilon_reduction_factor + epsilon_min
             while (not env.game_over) and (episode_step<max_episode_step):
-                # Her spiller vi spillet og tilføjer til replay buffer
+                # Her spiller modellen og tilføjer til replay buffer
                 state=env.one_hot_encode(env.board).to(device)
-
                 # vælger action
                 if np.random.rand()<epsilon:
                     # action vælges tilfældigt
                     y=np.random.randint(0,env.size)
                     x=np.random.randint(0,env.size)
                 else:
-                    # De kendte felter fjernes fra den outputtede q-tabel
-                    revealed=state[9].clone().detach().numpy()
-                    array=np.array(model.forward(state).detach().clone()[0].unflatten(0,(env.size,env.size))) #*revealed
+                    array=np.array(model.forward(state).detach().clone()[0].unflatten(0,(env.size,env.size))) 
                     # og action vælges
                     y,x=np.unravel_index(np.argmax(array),array.shape)
-                    
-
        
                 # der tages et step
                 state,action,reward,new_state,is_terminal=env.step(y,x)
                 step_count+=1
                 episode_step+=1
           
-
                 ## store to buffers
                 state = env.one_hot_encode(state)
                 new_state=env.one_hot_encode(new_state)
@@ -112,11 +104,9 @@ while not exit_program:
                     losses.append([loss.item()])
                     ## step the optimizer
                     model.update_weights(loss)
-            
-            if i % 5000 == 0:
-                print(i)
                
             if (i) % iteration_period == 0:
+                #Tester modellen hver 10.000 spil 
                 win=0
                 for j in range(test_games):
                     env.reset()
@@ -124,8 +114,8 @@ while not exit_program:
                     with torch.no_grad():
                         while (not env.game_over) and (episode_step < max_episode_step):
                             state=env.one_hot_encode(env.board)
-                            revealed=state[9].clone().detach().numpy()
-                            array=np.array(model.forward(state).detach().clone()[0].unflatten(0,(env.size,env.size))) #*revealed
+                   
+                            array=np.array(model.forward(state).detach().clone()[0].unflatten(0,(env.size,env.size)))
                             # og action vælges
                             y,x=np.unravel_index(np.argmax(array),array.shape)
                             # der tages et step
@@ -133,27 +123,17 @@ while not exit_program:
                             episode_step+=1
                             if env.won:
                                 win+=1
-                print(win/test_games)
                 click_repeat.append(click_count)
                 wins.append([win])
                 p_vals.append([win/test_games])
                 if (i )% 20000 == 0:
                     name=f"model6_{i/1000}K.pt"
                     torch.save(model.state_dict(), name)
-
-
-                
-                # print("model:",i)
-                # print("wins:",wins[i/iteration_period])
-                # print("steps:",episode_steps[i/iteration_period])
-                # print("P:",p_vals[i/iteration_period])
-                #print("Losses:",losses)
-                #print("Repeat Clicks:",click_repeat[int(i/50000])
+                    
             episode_steps.append([episode_step])
             i+=1
     torch.save(model.state_dict(),'model6_400kfull.pt')
- 
-    
+
     import csv
     with open("losses_data6.csv","w",newline="") as file:
         writer = csv.writer(file)
@@ -167,34 +147,8 @@ while not exit_program:
     with open("pvals_test_data6.csv","w",newline="") as file:
         writer = csv.writer(file)
         writer.writerows(p_vals)
-                # Estimate validation error
-    # Plot scores        
-    # plt.figure('Score')
-    # plt.clf()
-    # plt.plot(p_value, '.')
-    # plt.title(f'Step {step_count}: eps={epsilon:.3}')
-    # plt.xlabel('Episode')
-    # plt.ylabel('Score')
-    # plt.grid(True)
-      
-    # # Plot number of steps
-    # plt.figure('Steps per episode')
-    # plt.clf()
-    # plt.plot(episode_steps, '.')
-    # plt.xlabel('Episode')
-    # plt.ylabel('Steps')
-    # plt.grid(True)
 
-    # # Plot last batch loss
-    # plt.figure('Loss')
-    # plt.clf()
-    # plt.plot(losses, '.')
-    # plt.xlabel('Episode')
-    # plt.ylabel('Loss')
-    # plt.grid(True)
-           
-    # # saving model
-    # plt.show()
+
     exit_program=True
               
                
