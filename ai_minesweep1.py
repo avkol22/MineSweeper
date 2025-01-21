@@ -12,12 +12,11 @@ buffer_len = 100000
 counter_max = 2000  
 epsilon = 1
 epsilon_min = 0.01
-epsilon_reduction_factor = 0.01**(1/60000) ## tidligere 60000
+epsilon_reduction_factor = 0.01**(1/60000)
 iteration_max=400000
 iteration_period=10000
 steps_per_gradient_update = 10
-max_episode_step = 49
-#start_input = size**2 *10
+max_episode_step = 36
 
 class Network8(nn.Module):
     def __init__(self, size):
