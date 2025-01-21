@@ -4,21 +4,12 @@ import math
 import torch
 import torch.nn.functional as F
 
-from collections import deque
-# hver eneste frame, opdater new_state
-# tilføj SARST til deque
-# opdater state
-# I så har tilføjet framet INDEN til replay bufferen
-
-#buffer = deque(len=10000)
-
-
 class MineSweeper():
     rendering=False
     #Load mine
     file = 'mine.png'
     images = pygame.image.load(file)
-
+    
     def __init__(self,size,state=None):
         pygame.init()
         if state is None:
@@ -28,7 +19,7 @@ class MineSweeper():
         self.did_click_again = 0 
 
     def board_creater(self,first_choice):
-        #creates board based on the first choice
+        #skaber brættet baseret på det første trin, så man ikke lander på en bombe i første skridt
         y_choice,x_choice = first_choice
         mine_num=np.random.randint(int(self.size**2/4),int(self.size**2/3)) # antal miner
         solution=np.zeros((self.size,self.size),dtype=int)
@@ -38,8 +29,7 @@ class MineSweeper():
                 if 0<=x_<self.size and 0<=y_<self.size:
                     solution[y_,x_]=-2
         self.numbomb = 0
-        ## placerer minerne tilfældigt, men ikke oveni 
-        # hinanden eller indgangsstedet
+        ## placerer minerne tilfældigt, men ikke oveni hinanden eller indgangsstedet
         for i in range (mine_num):
             x_bomb,y_bomb=np.random.randint(0,self.size),np.random.randint(0,self.size)
             if solution[y_bomb,x_bomb]==0:
@@ -69,7 +59,7 @@ class MineSweeper():
         return self.board,self.output
     
     def get_input(self):
-        ## tjekker løsing og opdaterer boardet
+        ## tjekker løsing for (y,x), opdaterer boardet og giver en reward
         for y in range(self.size):
             for x in range(self.size): 
                 if self.output[y,x]==1 and self.board[y,x]==9:  
@@ -98,6 +88,7 @@ class MineSweeper():
         return (state, self.action, self.reward, self.board, self.game_over)
 
     def did_win(self):
+        #Tjekker om man har vendt alt undtaget bomberne
         counter=0
         for x in range(self.size):
             for y in range(self.size):
@@ -112,7 +103,7 @@ class MineSweeper():
 
     def choose(self,x,y):
         if self.new_game == True:
-            # Creates the solution-board after the first click - ensuring first click is not a bomb
+            # Laver løsningsbrættet efter det første klik
             self.solution = self.board_creater((y,x))
             self.new_game = False
         self.output[y,x] = 1
@@ -120,8 +111,7 @@ class MineSweeper():
         return self.reward
 
     def zero_slot(self,output,y,x):
-        ## if the chosen slot has value zero, 
-        ## choose the sorrounding 8 tiles
+        ## Hvis den valgte værdi er 0, bliver de omringende også valgt automatisk
         for x_small in range(x-1,x+2):
             for y_small in range(y-1,y+2):
                 if self.size>x_small>=0 and self.size>y_small>=0:
@@ -133,7 +123,7 @@ class MineSweeper():
         pygame.quit()
 
     def init_render(self):
-        ## set up the screen for rendering
+        ## sætter skærmen op til at render
         self.screen=pygame.display.set_mode([600,600])
         pygame.display.set_caption("Minesweeper")
         self.background=pygame.Surface(self.screen.get_size())
@@ -145,19 +135,19 @@ class MineSweeper():
         if not self.rendering:
             self.init_render()
         
-        # Limit to 30 fps
+        # Begrænser til 15 fps
         self.clock.tick(15)
 
-        # Clear the screen
+        # Fylder skærmen ud
         self.screen.fill((128,128,128))
 
-        # Draw board
+        # Tegner brættet
         blank_color=(220,220,220)
         revealed_color=(192,192,192)
 
         for y in range(self.size):
             for x in range(self.size):
-                if self.board[y,x]==9 or self.board[y,x] == 11:
+                if self.board[y,x]==9:
                     color=blank_color
                     text=self.font.render("",True,(0,0,0))
                 else:
